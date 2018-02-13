@@ -7,7 +7,7 @@ from nltk.tokenize import word_tokenize
 import itertools
 from collections import defaultdict
 import pickle
-EN_WHITELIST = '0123456789abcdefghijklmnopqrstuvwxyz ' # space is included in whitelist
+EN_WHITELIST = '0123456789abcdefghijklmnopqrstuvwxyz '
 EN_BLACKLIST = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~\''
 FileName="data/chat.txt"
 limit={
