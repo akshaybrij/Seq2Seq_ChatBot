@@ -53,6 +53,7 @@ class Seq2Seq:
 
     def train(self,train_set,sess=None):
         saver= tf.train.Saver()
+        print("Training Started...")
         try:
             if not sess:
                 sess=tf.Session()
