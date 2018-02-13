@@ -34,13 +34,14 @@ def filtererd_data(seq):
     filtered_q=[]
     filtered_a=[]
     for i in range(0,len(seq),2):
-        if i+1 < len(seq):
+        try:
          qlen, alen = len(seq[i].split(' ')), len(seq[i+1].split(' '))
          if qlen >= limit['maxq'] and qlen <= limit['minq']:
             if alen >= limit['maxa'] and alen <= limit['mina']:
                 filtered_q.append(seq[i])
                 filtered_a.append(seq[i+1])
-         
+        except Exception as e:
+         pass
     return (filtered_a,filtered_q)
 
 def zero_pad(qtokenized,atokenized,w2idx):
@@ -77,7 +78,7 @@ def process_data():
     'i2w':i2w,
     'freq_dist':freq_dist
     }
-    with open('ds/metadata.pkl','wb') as f:
+    with open('metadata.pkl','wb') as f:
         pickle.dump(metadata,f)
 
 def load_data(PATH=''):
