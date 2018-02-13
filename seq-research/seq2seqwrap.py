@@ -56,7 +56,7 @@ class Seq2Seq:
             for i in range(self.epochs):
                 loss=self.train_batch(sess,train_set)
                 if i or i%2 == 0:
-                    print("Iterating {}".format(i))
+                    print("Iterating")
                     saver.save(sess,self.ckpt+'seq2seq_model'+'.ckpt',global_step=i)
                     sys.stdout.flush()
         except KeyboardInterrupt:
