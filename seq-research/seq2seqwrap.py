@@ -55,7 +55,7 @@ class Seq2Seq:
                 sess.run(tf.global_variables_initializer())
             for i in range(self.epochs):
                 loss=self.train_batch(sess,train_set)
-                if i or i%2 == 0:
+                if i or i%100 == 0:
                     print("Iterating")
                     saver.save(sess,self.ckpt+'seq2seq_model'+'.ckpt',global_step=i)
                     sys.stdout.flush()
