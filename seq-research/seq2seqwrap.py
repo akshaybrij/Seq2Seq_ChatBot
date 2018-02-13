@@ -46,11 +46,6 @@ class Seq2Seq:
         loss,_=sess.run([self.loss_seq,self.train_operation])
         return loss
 
-    #def eval_step(self,sess,eval_bach):
-    #    batchX,batchY=eval_bach.__next__()
-    #    feed_dict=get_feed(batchX,batchY,keep_prob=0.7)
-    #    loss_
-
     def train(self,train_set,sess=None):
         saver= tf.train.Saver()
         print("Training Started...")
