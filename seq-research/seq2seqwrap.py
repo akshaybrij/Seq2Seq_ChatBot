@@ -2,12 +2,12 @@ import tensorflow as tf
 import numpy as np
 import sys
 class Seq2Seq:
-    def __init__(self, xseq_len, yseq_len, xvocab_size, yvocab_size,emb_dim, num_layers, ckpt_path,lr=0.0001,epochs=10000):
+    def __init__(self, xseq_len, yseq_len, xvocab_size, yvocab_size,emb_dim, num_layers, ckpt,lr=0.0001,epochs=10000):
         self.xseq_len = xseq_len
         self.yseq_len = yseq_len
         self.xvocab_size=xvocab_size
         self.yvocab_size=yvocab_size
-        self.emb_dim=embd_dim
+        self.emb_dim=emb_dim
         self.epochs=epochs
         self.learning_rate=lr
         self.ckpt=ckpt
@@ -20,23 +20,23 @@ class Seq2Seq:
             self.enc_ip = [ tf.placeholder(shape=[None,],
                                 dtype=tf.int64,
                                 name='ei_{}'.format(t)) for t in range(xseq_len) ]
-            self.label=[tf.placeholder(shape=[None,] , dtype=tf.int64, name="d_{}".format(ds)) for ds in range(yseq_len)]
+            self.labels=[tf.placeholder(shape=[None,] , dtype=tf.int64, name="d_{}".format(ds)) for ds in range(yseq_len)]
             self.dec_ip = [ tf.zeros_like(self.enc_ip[0], dtype=tf.int64, name='GO') ] + self.labels[:-1]
             self.prob=tf.placeholder(dtype=tf.float32)
             basic_cell=tf.nn.rnn_cell.DropoutWrapper(tf.nn.rnn_cell.BasicLSTMCell(emb_dim,state_is_tuple=True),output_keep_prob=self.prob)
             stacked_lstm=tf.nn.rnn_cell.MultiRNNCell([basic_cell]*num_layers,state_is_tuple=True)
             with tf.variable_scope('decoder') as scope:
-                self.decoder_output,self.decoder_state=tf.contrib.legacy_seq2seq.embedding_rnn_seq2seq(self.enc_ip,self.dec_ip,xvocab_size,yvocab_size,emb_dim)
+                self.decoder_output,self.decoder_state=tf.contrib.legacy_seq2seq.embedding_rnn_seq2seq(self.enc_ip,self.dec_ip,stacked_lstm,xvocab_size,yvocab_size,emb_dim)
                 scope.reuse_variables()
                 self.decode_outputs_test, self.decode_states_test = tf.contrib.legacy_seq2seq.embedding_rnn_seq2seq(self.enc_ip, self.dec_ip, stacked_lstm, xvocab_size, yvocab_size,emb_dim,feed_previous=True)
-            loss_weights=[tf.ones_like(lab,dtype=tf.int32) for lab in label]
-            self.loss_seq=tf.contrib.legacy_seq2seq.sequence_loss(self.decoder_ouput,self.labels,loss_weights,yvocab_size)
-            self.train_operation=tf.train.AdamOptimizer(learning_rate).minimize(self.loss_seq)
+            loss_weights=[tf.ones_like(lab,dtype=tf.float32) for lab in self.labels]
+            self.loss_seq=tf.contrib.legacy_seq2seq.sequence_loss(self.decoder_output,self.labels,loss_weights,yvocab_size)
+            self.train_operation=tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss_seq)
         _graph()
 
     def _getfeed(self,X,y,keep_prob):
         feed_dict={self.enc_ip[t]:X[t] for t in ranKeyge(xseq_len)}
-        feed_dict.update({self.label[t]:y[t] for t in range(yseq_len)})
+        feed_dict.update({self.labels[t]:y[t] for t in range(yseq_len)})
         feed_dict[self.prob]=keep_prob
         return feed_dict
 
@@ -56,10 +56,11 @@ class Seq2Seq:
         try:
             if not sess:
                 sess=tf.Session()
-                sess.run([tf.global_variables_initializer])
+                sess.run(tf.global_variables_initializer())
             for i in range(self.epochs):
-                loss=self.train_batch(sess,training_set)
-                if i or i%100 == 0:
+                loss=self.train_batch(sess,train_set)
+                if i or i%2 == 0:
+                    print("Iterating {}".format(i))
                     saver.save(sess,self.ckpt+'seq2seq_model'+'.ckpt',global_step=i)
                     sys.stdout.flush()
         except KeyboardInterrupt:
